@@ -3,7 +3,7 @@
  * Contains functions to generate components from user prompts.
  */
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+const API_BASE_URL = 'https://ai-live-editor-71ai.onrender.com';
 
 /**
  * Generate a React component based on the provided prompt.
