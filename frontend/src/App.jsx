@@ -2,8 +2,6 @@ import React, { useState, useEffect } from 'react';
 import DynamicRenderer from './components/DynamicRenderer';
 import PromptInput from './components/PromptInput';
 import CodeViewer from './components/CodeViewer';
-import { generateComponent } from './api';
-
 // Default component code templates
 const defaultComponents = {
   Hero: `import React from 'react';
@@ -76,24 +74,31 @@ function App() {
     setError(null);
 
     try {
-      const result = await generateComponent(prompt);
-      if (result.success) {
-        // Extract component name without .jsx extension
-        const componentName = result.component.replace('.jsx', '');
+      const response = await fetch("https://ai-live-editor-71ai.onrender.com/generate", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ prompt }),
+      });
 
-        // Update only the targeted component
-        setComponents(prev => ({
-          ...prev,
-          [componentName]: result.code
-        }));
+      const data = await response.json();
+      console.log(data);
 
-        setActiveComponent(componentName);
-        setHighlightedComponent(componentName);
-      } else {
-        setError(result.message);
-      }
-    } catch (err) {
-      setError('Failed to connect to the server. Is the backend running?');
+      // Extract component name without .jsx extension
+      const componentName = data.component.replace('.jsx', '');
+
+      // Update only the targeted component
+      setComponents(prev => ({
+        ...prev,
+        [componentName]: data.code
+      }));
+
+      setActiveComponent(componentName);
+      setHighlightedComponent(componentName);
+    } catch (error) {
+      console.error(error);
+      setError("Backend connection failed");
     } finally {
       setIsLoading(false);
     }
