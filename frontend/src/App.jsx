@@ -74,7 +74,7 @@ function App() {
     setError(null);
 
     try {
-      const response = await fetch("https://ai-live-editor-71ai.onrender.com/generate", {
+      const response = await fetch("http://127.0.0.1:8000/generate", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
