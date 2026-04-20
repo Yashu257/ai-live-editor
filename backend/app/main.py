@@ -7,7 +7,7 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import Response
 
-from app.routes import generate, error_fix, scan, apply_fix, rollback
+from app.routes import generate, error_fix, scan, apply_fix, rollback, report_error
 
 # Initialize FastAPI application
 app = FastAPI(
@@ -20,27 +20,24 @@ app = FastAPI(
 # Allows frontend to communicate with backend from any origin
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=False,
+    allow_origins=[
+        "http://localhost:5173",
+        "http://127.0.0.1:5173"
+    ],
+    allow_credentials=True,
     allow_methods=["*"],
-    allow_headers=["*"],
+    allow_headers=["*"]
 )
 
 
-# Handle OPTIONS preflight requests for CORS
-@app.options("/{full_path:path}")
-async def options_handler(request: Request, full_path: str):
-    """Respond to CORS preflight requests."""
-    return Response(status_code=200)
-
-
 # Include route modules
-# Each module handles a specific domain (generation, error fixing, scanning, applying, rollback)
+# Each module handles a specific domain (generation, error fixing, scanning, applying, rollback, error-reporting)
 app.include_router(generate.router, prefix="/generate", tags=["code-generation"])
 app.include_router(error_fix.router, prefix="/fix-error", tags=["error-fixing"])
 app.include_router(scan.router, prefix="/scan-project", tags=["project-scan"])
 app.include_router(apply_fix.router, prefix="/apply-fix", tags=["apply-fix"])
 app.include_router(rollback.router, prefix="/rollback", tags=["rollback"])
+app.include_router(report_error.router, tags=["error-reporting"])
 
 
 @app.get("/")

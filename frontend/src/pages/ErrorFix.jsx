@@ -79,6 +79,8 @@ function ErrorFix() {
   };
 
   const handleApplyFix = async () => {
+    console.log("🔥 Apply Fix clicked");
+
     if (!result || !result.changes) return;
 
     setIsApplying(true);

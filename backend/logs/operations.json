@@ -1,0 +1,53 @@
+[
+  {
+    "timestamp": "2026-04-18T17:05:44.068045",
+    "type": "apply_fix",
+    "data": {
+      "changes_count": 1,
+      "changes": [
+        {
+          "file": "app.py",
+          "before": "def handle_request():\n    return process()",
+          "after": "import logging\n\nlogger = logging.getLogger(__name__)\n\ndef handle_request():\n    try:\n        return process()\n    except Exception as e:\n        logger.exception('Request failed')\n        raise"
+        }
+      ],
+      "commit_hash": null,
+      "success": false,
+      "error_message": "File not found: File not found: .\\app.py"
+    }
+  },
+  {
+    "timestamp": "2026-04-20T22:58:55.479236",
+    "type": "apply_fix",
+    "data": {
+      "changes_count": 1,
+      "changes": [
+        {
+          "file": "test_file.py",
+          "before": "print(\"hello\")",
+          "after": "print(\"hello world fixed\")"
+        }
+      ],
+      "commit_hash": null,
+      "success": false,
+      "error_message": "File not found: File not found: .\\test_file.py"
+    }
+  },
+  {
+    "timestamp": "2026-04-20T23:05:53.016192",
+    "type": "apply_fix",
+    "data": {
+      "changes_count": 1,
+      "changes": [
+        {
+          "file": "backend/app/main.py",
+          "before": "app = FastAPI()",
+          "after": "app = FastAPI()\n# AI FIX APPLIED"
+        }
+      ],
+      "commit_hash": null,
+      "success": false,
+      "error_message": "File not found: File not found: .\\backend/app/main.py"
+    }
+  }
+]
