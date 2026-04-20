@@ -78,10 +78,10 @@ def generate_fix(error: str) -> dict:
     Example output:
         {
             "summary": "Import error: Missing module 'axios'",
-            "affected_files": ["src/api/client.js"],
+            "affected_files": ["frontend/src/api/client.js"],
             "changes": [
                 {
-                    "file": "src/api/client.js",
+                    "file": "frontend/src/api/client.js",
                     "before": "import axios from 'axios';",
                     "after": "// npm install axios\\nimport axios from 'axios';"
                 }
@@ -158,10 +158,10 @@ def _simulate_ai_error_fix(error: str, prompt: str) -> dict:
         if "connection" in error_lower or "failed" in error_lower:
             return {
                 "summary": "Database connection failure due to uninitialized connection or missing connection string.",
-                "affected_files": ["database.py", "config.py"],
+                "affected_files": ["backend/app/database.py", "backend/app/config.py"],
                 "changes": [
                     {
-                        "file": "database.py",
+                        "file": "backend/app/database.py",
                         "before": "connection = None\n\ndef query(sql):\n    return connection.execute(sql)",
                         "after": "import os\nimport logging\nimport psycopg2\n\nlogger = logging.getLogger(__name__)\nDB_URI = os.getenv('DATABASE_URL', 'postgresql://localhost/mydb')\n\ndef query(sql, params=None):\n    conn = None\n    cur = None\n    try:\n        conn = psycopg2.connect(DB_URI)\n        cur = conn.cursor()\n        cur.execute(sql, params or ())\n        conn.commit()\n        return cur.fetchall()\n    except psycopg2.Error as e:\n        logger.error(f'Database error: {e}')\n        raise\n    finally:\n        if cur:\n            cur.close()\n        if conn:\n            conn.close()"
                     }
@@ -172,10 +172,10 @@ def _simulate_ai_error_fix(error: str, prompt: str) -> dict:
         elif "timeout" in error_lower:
             return {
                 "summary": "Database query timeout due to slow queries and missing connection management.",
-                "affected_files": ["database.py"],
+                "affected_files": ["backend/app/database.py"],
                 "changes": [
                     {
-                        "file": "database.py",
+                        "file": "backend/app/database.py",
                         "before": "def query(sql):\n    return connection.execute(sql)",
                         "after": "import os\nimport logging\nimport psycopg2\n\nlogger = logging.getLogger(__name__)\nDB_URI = os.getenv('DATABASE_URL', 'postgresql://localhost/mydb')\n\ndef query(sql, params=None, timeout=30):\n    conn = None\n    cur = None\n    try:\n        conn = psycopg2.connect(DB_URI, connect_timeout=timeout)\n        cur = conn.cursor()\n        cur.execute(sql, params or ())\n        conn.commit()\n        return cur.fetchall()\n    except psycopg2.Error as e:\n        logger.error(f'Database error: {e}')\n        raise\n    finally:\n        if cur:\n            cur.close()\n        if conn:\n            conn.close()"
                     }
@@ -189,10 +189,10 @@ def _simulate_ai_error_fix(error: str, prompt: str) -> dict:
         if "token" in error_lower or "jwt" in error_lower or "expired" in error_lower:
             return {
                 "summary": "JWT token validation failure due to missing or expired token in request headers.",
-                "affected_files": ["auth.py", "middleware/auth.py"],
+                "affected_files": ["backend/app/auth.py", "backend/app/middleware/auth.py"],
                 "changes": [
                     {
-                        "file": "middleware/auth.py",
+                        "file": "backend/app/middleware/auth.py",
                         "before": "def authenticate(request):\n    return request.user",
                         "after": "import jwt\nfrom flask import request\n\nSECRET_KEY = os.getenv('JWT_SECRET')\n\ndef authenticate(request):\n    token = request.headers.get('Authorization', '').replace('Bearer ', '')\n    if not token:\n        raise Unauthorized('Missing token')\n    try:\n        payload = jwt.decode(token, SECRET_KEY, algorithms=['HS256'])\n        return payload\n    except jwt.ExpiredSignatureError:\n        raise Unauthorized('Token expired')"
                     }
@@ -203,10 +203,10 @@ def _simulate_ai_error_fix(error: str, prompt: str) -> dict:
         else:
             return {
                 "summary": "Authentication failure likely due to missing or invalid credentials validation.",
-                "affected_files": ["auth.py", "services/user.py"],
+                "affected_files": ["backend/app/auth.py", "backend/app/services/user.py"],
                 "changes": [
                     {
-                        "file": "auth.py",
+                        "file": "backend/app/auth.py",
                         "before": "def login(username, password):\n    user = find_user(username)\n    return user",
                         "after": "import bcrypt\n\ndef login(username, password):\n    user = find_user(username)\n    if not user or not bcrypt.checkpw(password.encode(), user.password_hash):\n        raise Unauthorized('Invalid credentials')\n    return generate_token(user)"
                     }
@@ -220,10 +220,10 @@ def _simulate_ai_error_fix(error: str, prompt: str) -> dict:
         if "cors" in error_lower:
             return {
                 "summary": "CORS policy blocking cross-origin requests due to missing or restrictive origin configuration.",
-                "affected_files": ["main.py", "middleware/cors.py"],
+                "affected_files": ["backend/app/main.py", "backend/app/middleware/cors.py"],
                 "changes": [
                     {
-                        "file": "main.py",
+                        "file": "backend/app/main.py",
                         "before": "app.add_middleware(CORSMiddleware, allow_origins=['http://localhost:3000'])",
                         "after": "from fastapi.middleware.cors import CORSMiddleware\n\napp.add_middleware(\n    CORSMiddleware,\n    allow_origins=os.getenv('CORS_ORIGINS', 'http://localhost:3000').split(','),\n    allow_credentials=True,\n    allow_methods=['GET', 'POST', 'PUT', 'DELETE'],\n    allow_headers=['Authorization', 'Content-Type']\n)"
                     }
@@ -234,10 +234,10 @@ def _simulate_ai_error_fix(error: str, prompt: str) -> dict:
         else:
             return {
                 "summary": "API request failure due to missing error handling and retry logic.",
-                "affected_files": ["services/api.js"],
+                "affected_files": ["frontend/src/services/api.js"],
                 "changes": [
                     {
-                        "file": "services/api.js",
+                        "file": "frontend/src/services/api.js",
                         "before": "const response = await fetch('/api/data');\nconst data = await response.json();",
                         "after": "async function fetchWithRetry(url, options = {}, retries = 3) {\n  for (let i = 0; i < retries; i++) {\n    try {\n      const response = await fetch(url, {\n        ...options,\n        headers: { 'Content-Type': 'application/json', ...options.headers }\n      });\n      if (!response.ok) throw new Error(`HTTP ${response.status}`);\n      return await response.json();\n    } catch (err) {\n      if (i === retries - 1) throw err;\n      await new Promise(r => setTimeout(r, 1000 * (i + 1)));\n    }\n  }\n}"
                     }
@@ -251,10 +251,10 @@ def _simulate_ai_error_fix(error: str, prompt: str) -> dict:
         if "python" in error_lower or ".py" in error_lower:
             return {
                 "summary": "Python module import failure due to missing dependency in requirements or incorrect module path.",
-                "affected_files": ["requirements.txt"],
+                "affected_files": ["backend/requirements.txt"],
                 "changes": [
                     {
-                        "file": "requirements.txt",
+                        "file": "backend/requirements.txt",
                         "before": "# Dependencies",
                         "after": "# Dependencies\npsycopg2-binary==2.9.9\npython-dotenv==1.0.0"
                     }
@@ -265,10 +265,10 @@ def _simulate_ai_error_fix(error: str, prompt: str) -> dict:
         else:
             return {
                 "summary": "JavaScript module resolution failure due to missing npm package or incorrect import path.",
-                "affected_files": ["package.json"],
+                "affected_files": ["frontend/package.json"],
                 "changes": [
                     {
-                        "file": "package.json",
+                        "file": "frontend/package.json",
                         "before": '{\n  "dependencies": {\n    "react": "^18.0.0"\n  }\n}',
                         "after": '{\n  "dependencies": {\n    "react": "^18.0.0",\n    "axios": "^1.6.0"\n  }\n}'
                     }
@@ -281,10 +281,10 @@ def _simulate_ai_error_fix(error: str, prompt: str) -> dict:
     if any(kw in error_lower for kw in ["syntax", "unexpected", "parse", "invalid syntax"]):
         return {
             "summary": "Syntax error due to malformed code structure - likely missing brackets, quotes, or punctuation.",
-            "affected_files": ["app.py"],
+            "affected_files": ["backend/app/main.py"],
             "changes": [
                 {
-                    "file": "app.py",
+                    "file": "backend/app/main.py",
                     "before": "def process_data(data\n    return data.filter(lambda x: x.active)",
                     "after": "def process_data(data):\n    return data.filter(lambda x: x.active)"
                 }
@@ -298,10 +298,10 @@ def _simulate_ai_error_fix(error: str, prompt: str) -> dict:
         if "cannot read" in error_lower and "undefined" in error_lower:
             return {
                 "summary": "Property access on undefined/null value without proper null checking.",
-                "affected_files": ["components/UserCard.jsx"],
+                "affected_files": ["frontend/src/components/UserCard.jsx"],
                 "changes": [
                     {
-                        "file": "components/UserCard.jsx",
+                        "file": "frontend/src/components/UserCard.jsx",
                         "before": "const email = user.profile.contact.email;",
                         "after": "const email = user?.profile?.contact?.email ?? 'no-email@example.com';"
                     }
@@ -312,10 +312,10 @@ def _simulate_ai_error_fix(error: str, prompt: str) -> dict:
         else:
             return {
                 "summary": "Variable is undefined or null at point of use, indicating missing initialization or check.",
-                "affected_files": ["utils/helpers.js"],
+                "affected_files": ["frontend/src/utils/helpers.js"],
                 "changes": [
                     {
-                        "file": "utils/helpers.js",
+                        "file": "frontend/src/utils/helpers.js",
                         "before": "function calculateTotal(items) {\n  return items.reduce((sum, item) => sum + item.price, 0);\n}",
                         "after": "function calculateTotal(items) {\n  if (!items || !Array.isArray(items)) return 0;\n  return items.reduce((sum, item) => sum + (item?.price || 0), 0);\n}"
                     }
@@ -328,10 +328,10 @@ def _simulate_ai_error_fix(error: str, prompt: str) -> dict:
     if any(kw in error_lower for kw in ["reference", "is not defined", "not defined", "nameerror"]):
         return {
             "summary": "Variable or function used before declaration or in wrong scope.",
-            "affected_files": ["app.py"],
+            "affected_files": ["backend/app/main.py"],
             "changes": [
                 {
-                    "file": "app.py",
+                    "file": "backend/app/main.py",
                     "before": "result = process_data(data)\n\ndef process_data(items):\n    return [i * 2 for i in items]",
                     "after": "def process_data(items):\n    return [i * 2 for i in items]\n\nresult = process_data(data)"
                 }
@@ -344,10 +344,10 @@ def _simulate_ai_error_fix(error: str, prompt: str) -> dict:
     if any(kw in error_lower for kw in ["file not found", "no such file", "enoent", "path", "permission"]):
         return {
             "summary": "File system operation failed due to missing file, incorrect path, or insufficient permissions.",
-            "affected_files": ["utils/file_handler.py"],
+            "affected_files": ["backend/app/utils/file_handler.py"],
             "changes": [
                 {
-                    "file": "utils/file_handler.py",
+                    "file": "backend/app/utils/file_handler.py",
                     "before": "def read_config():\n    with open('config.json') as f:\n        return json.load(f)",
                     "after": "import os\n\ndef read_config():\n    config_path = os.getenv('CONFIG_PATH', 'config.json')\n    if not os.path.exists(config_path):\n        raise FileNotFoundError(f'Config not found: {config_path}')\n    with open(config_path) as f:\n        return json.load(f)"
                 }
@@ -360,10 +360,10 @@ def _simulate_ai_error_fix(error: str, prompt: str) -> dict:
     if any(kw in error_lower for kw in ["memory", "out of memory", "oom", "performance", "slow"]):
         return {
             "summary": "Memory or performance issue due to inefficient data handling or resource leaks.",
-            "affected_files": ["services/data_processor.py"],
+            "affected_files": ["backend/app/services/data_processor.py"],
             "changes": [
                 {
-                    "file": "services/data_processor.py",
+                    "file": "backend/app/services/data_processor.py",
                     "before": "def process_large_file(path):\n    data = open(path).read()\n    return data.split('\\n')",
                     "after": "def process_large_file(path, chunk_size=10000):\n    with open(path) as f:\n        while chunk := f.read(chunk_size):\n            yield chunk.split('\\n')"
                 }
@@ -375,10 +375,10 @@ def _simulate_ai_error_fix(error: str, prompt: str) -> dict:
     # Fallback - LOW CONFIDENCE (when no clear pattern matches)
     return {
         "summary": "Unable to determine specific root cause from error message. Review stack trace and application context.",
-        "affected_files": ["app.py", "main.py"],
+        "affected_files": ["backend/app/main.py"],
         "changes": [
             {
-                "file": "app.py",
+                "file": "backend/app/main.py",
                 "before": "def handle_request():\n    return process()",
                 "after": "import logging\n\nlogger = logging.getLogger(__name__)\n\ndef handle_request():\n    try:\n        return process()\n    except Exception as e:\n        logger.exception('Request failed')\n        raise"
             }
